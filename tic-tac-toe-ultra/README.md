@@ -1,50 +1,33 @@
-# React + TypeScript + Vite
+# Tic-Tac-Toe Ultra
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A recursive tic-tac-toe game built with React and TypeScript where each cell can contain another complete game board.
 
-Currently, two official plugins are available:
+## How the Recursive Components Work
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### The Recursion Pattern
 
-## Expanding the ESLint configuration
+The game uses two main components that recursively render each other:
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+**`Tictactoe`** → Creates a 3×3 grid of **`Cell`** components  
+**`Cell`** → Renders either a mark ("X" or "O") OR another **`Tictactoe`** component
 
-- Configure the top-level `parserOptions` property like this:
+The recursion is controlled by the `degree` prop:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- **degree = 0**: Each cell displays a simple mark (base case)
+- **degree = 1**: Each cell contains a full 3×3 tic-tac-toe board
+- **degree = 2**: Each cell contains a board, where each of _those_ cells contains another board
+- **degree = n**: n levels of nested boards
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Game Flow
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+1. Players alternate between "X" and "O" on the deepest level boards
+2. When a player wins a nested board, that entire board collapses into their mark
+3. The winner mark propagates up to the parent board via `setParentEntry`
+4. The game continues until someone wins the top-level board
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Key Implementation Details
+
+- **State propagation**: Winners flow upward through `setParentEntry` callbacks
+- **Turn management**: A single `turn` state is passed down through all nested levels
+- **Visual scaling**: Font sizes dynamically adjust based on nesting depth using `initialDegree`
+- **Color coding**: Grid backgrounds alternate colors (orange/green) at each recursion level
